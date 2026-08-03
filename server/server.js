@@ -9,7 +9,9 @@ connectDB();
 
 // ── Middleware ───────────────────────────────────────────────────────────────
 app.use(cors({
-  origin: process.env.CLIENT_URL || /^http:\/\/localhost:\d+$/,
+  origin: function (origin, callback) {
+    callback(null, true);
+  },
   credentials: true,
 }));
 app.use(express.json());
