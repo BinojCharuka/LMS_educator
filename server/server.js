@@ -22,12 +22,26 @@ app.use('/api/auth',      require('./routes/authRoutes'));
 app.use('/api/materials', require('./routes/materialRoutes'));
 
 // Temporary debug route
-app.get('/api/debug-env', (req, res) => {
+const mongoose = require('mongoose');
+app.get('/api/debug-env', async (req, res) => {
   const uri = process.env.MONGO_URI;
+  
+  let dbStatus = 'disconnected';
+  let dbError = null;
+  
+  try {
+    const conn = await mongoose.connect(uri, { serverSelectionTimeoutMS: 5000 });
+    dbStatus = 'connected';
+  } catch (err) {
+    dbError = err.message;
+  }
+
   res.json({
     hasMongoUri: !!uri,
     length: uri ? uri.length : 0,
-    startsWithQuote: uri ? uri.startsWith('"') : false
+    startsWithQuote: uri ? uri.startsWith('"') : false,
+    dbStatus,
+    dbError
   });
 });
 app.use('/api/payments',  require('./routes/paymentRoutes'));
