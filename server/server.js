@@ -1,11 +1,11 @@
 require('dotenv').config();
 const express = require('express');
 const cors    = require('cors');
-const connectDB = require('./config/db');
+
 
 // ── Initialize Express ───────────────────────────────────────────────────────
 const app = express();
-connectDB();
+const mongoose = require('mongoose');
 
 // ── Middleware ───────────────────────────────────────────────────────────────
 app.use(cors({
@@ -17,33 +17,24 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Ensure DB is connected before handling any requests (Serverless Best Practice)
+app.use(async (req, res, next) => {
+  if (mongoose.connection.readyState !== 1) {
+    try {
+      await mongoose.connect(process.env.MONGO_URI, { serverSelectionTimeoutMS: 5000 });
+      console.log('✅ MongoDB Connected (Middleware)');
+    } catch (err) {
+      console.error('❌ MongoDB Connection Error:', err.message);
+      return res.status(500).json({ success: false, message: 'Database connection failed' });
+    }
+  }
+  next();
+});
+
 // ── Routes ───────────────────────────────────────────────────────────────────
 app.use('/api/auth',      require('./routes/authRoutes'));
 app.use('/api/materials', require('./routes/materialRoutes'));
 
-// Temporary debug route
-const mongoose = require('mongoose');
-app.get('/api/debug-env', async (req, res) => {
-  const uri = process.env.MONGO_URI;
-  
-  let dbStatus = 'disconnected';
-  let dbError = null;
-  
-  try {
-    const conn = await mongoose.connect(uri, { serverSelectionTimeoutMS: 5000 });
-    dbStatus = 'connected';
-  } catch (err) {
-    dbError = err.message;
-  }
-
-  res.json({
-    hasMongoUri: !!uri,
-    length: uri ? uri.length : 0,
-    startsWithQuote: uri ? uri.startsWith('"') : false,
-    dbStatus,
-    dbError
-  });
-});
 app.use('/api/payments',  require('./routes/paymentRoutes'));
 app.use('/api/results',   require('./routes/resultRoutes'));
 app.use('/api/resources', require('./routes/resourceRoutes'));
