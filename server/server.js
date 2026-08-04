@@ -20,6 +20,16 @@ app.use(express.urlencoded({ extended: true }));
 // ── Routes ───────────────────────────────────────────────────────────────────
 app.use('/api/auth',      require('./routes/authRoutes'));
 app.use('/api/materials', require('./routes/materialRoutes'));
+
+// Temporary debug route
+app.get('/api/debug-env', (req, res) => {
+  const uri = process.env.MONGO_URI;
+  res.json({
+    hasMongoUri: !!uri,
+    length: uri ? uri.length : 0,
+    startsWithQuote: uri ? uri.startsWith('"') : false
+  });
+});
 app.use('/api/payments',  require('./routes/paymentRoutes'));
 app.use('/api/results',   require('./routes/resultRoutes'));
 app.use('/api/resources', require('./routes/resourceRoutes'));
