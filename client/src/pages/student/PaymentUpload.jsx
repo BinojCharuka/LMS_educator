@@ -40,21 +40,45 @@ export default function PaymentUpload() {
     setPreview(URL.createObjectURL(f));
   };
 
+  const [verifying, setVerifying] = useState(false);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!lessonPackId || !file) return setError('Please select a lesson pack and upload a slip image.');
-    setError(''); setSuccess(''); setLoading(true);
+    setError(''); setSuccess(''); setLoading(true); setVerifying(false);
+    
     try {
       const fd = new FormData();
       fd.append('lessonPackId', lessonPackId);
       fd.append('remark', randomRemark); // Send the generated remark
       fd.append('slip', file);
-      await api.post('/payments', fd, { headers: { 'Content-Type': 'multipart/form-data' } });
-      setSuccess(`Payment slip submitted! Awaiting verification.`);
+      
+      // Step 1: Upload the file (Fast)
+      const res = await api.post('/payments', fd, { headers: { 'Content-Type': 'multipart/form-data' } });
+      const paymentId = res.data.payment._id;
+      
+      // Step 2: Verify the payment using OCR (Takes 15-20s)
+      setLoading(false);
+      setVerifying(true);
+      
+      try {
+        const verifyRes = await api.post(`/payments/${paymentId}/verify`, { remark: randomRemark });
+        if (verifyRes.data.payment.status === 'approved') {
+          setSuccess(`Verification successful! Payment approved automatically.`);
+        } else {
+          setSuccess(`Payment submitted, but OCR could not verify it automatically. A teacher will review it.`);
+        }
+      } catch (verifyErr) {
+        setSuccess(`Payment submitted, but auto-verification failed. A teacher will review it.`);
+      }
+      
       setFile(null); setPreview(null); setLessonPackId('');
     } catch (err) {
       setError(err.response?.data?.message || 'Upload failed.');
-    } finally { setLoading(false); }
+    } finally { 
+      setLoading(false); 
+      setVerifying(false);
+    }
   };
 
   return (
@@ -171,12 +195,17 @@ export default function PaymentUpload() {
                 </div>
 
                 <div className="pt-2">
-                  <button type="submit" id="payment-submit-btn" disabled={loading || !file || !lessonPackId}
+                  <button type="submit" id="payment-submit-btn" disabled={loading || verifying || !file || !lessonPackId}
                     className="w-full bg-gradient-to-r from-primary-600 to-primary-500 hover:from-primary-700 hover:to-primary-600 text-white font-bold py-4 rounded-xl shadow-lg shadow-primary-500/30 transition-all flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed transform hover:-translate-y-0.5 active:translate-y-0">
                     {loading ? (
                       <span className="flex items-center gap-2">
                         <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                        Uploading...
+                        Uploading Image...
+                      </span>
+                    ) : verifying ? (
+                      <span className="flex items-center gap-2">
+                        <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                        Verifying with OCR...
                       </span>
                     ) : (
                       <span className="flex items-center gap-2">
