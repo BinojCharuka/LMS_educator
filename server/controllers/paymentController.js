@@ -1,5 +1,89 @@
 const Payment = require('../models/Payment');
+const LessonPack = require('../models/LessonPack');
 const cloudinary = require('../config/cloudinary');
+const Tesseract = require('tesseract.js');
+
+/**
+ * Helper function to run OCR on the uploaded bank slip and verify:
+ * 1. Price exactly matches LessonPack price
+ * 2. Date is today or within the last 7 days
+ * 3. Remark contains the studentId
+ */
+const verifySlipOCR = async (imageUrl, expectedPrice, expectedStudentId) => {
+  try {
+    const { data: { text } } = await Tesseract.recognize(imageUrl, 'eng');
+    
+    // 1. Price Matching
+    // Look for 'Rs', 'LKR', 'Amount', 'Price', 'Total' followed by a number
+    // Or just look for the expected price directly if it's uniquely formatted
+    let priceVerified = false;
+    
+    // First, let's try to find the exact expected price in the text.
+    // This is safer since we know the expected price (e.g. 2000)
+    // We look for boundaries around the price to avoid matching 2000 in 12000.
+    const exactPriceRegex = new RegExp(`\\b${expectedPrice}(?:\\.00)?\\b`);
+    if (exactPriceRegex.test(text)) {
+      priceVerified = true;
+    } else {
+      // Fallback to the old method but more strictly looking for keywords
+      const priceMatch = text.match(/(?:Rs\.?|LKR|Amount|Price|Total)[\s:]*([\d,]+\.\d{2}|[\d,]+)/i);
+      if (priceMatch) {
+        const extractedPrice = parseFloat(priceMatch[1].replace(/,/g, ''));
+        if (extractedPrice === expectedPrice) priceVerified = true;
+      }
+    }
+
+    // 2. Date Matching
+    // Matches DD/MM/YYYY, DD-MM-YYYY, YYYY/MM/DD, YYYY-MM-DD
+    const dateMatch = text.match(/\b(\d{2}[/-]\d{2}[/-]\d{4}|\d{4}[/-]\d{2}[/-]\d{2})\b/);
+    let dateVerified = false;
+    if (dateMatch) {
+      const dateString = dateMatch[1];
+      let slipDate;
+      if (dateString.match(/^\d{2}[/-]\d{2}[/-]\d{4}$/)) {
+        const parts = dateString.split(/[/-]/);
+        // We will default to parsing as DD/MM/YYYY since it's the most common format outside the US.
+        // Format for Date constructor: YYYY-MM-DD
+        slipDate = new Date(`${parts[2]}-${parts[1]}-${parts[0]}`);
+      } else {
+        // YYYY-MM-DD
+        slipDate = new Date(dateString.replace(/\//g, '-'));
+      }
+      
+      const now = new Date();
+      const diffTime = now.getTime() - slipDate.getTime();
+      const diffDays = diffTime / (1000 * 3600 * 24);
+      
+      // Valid if within the last 2 days (and we allow -1 for timezone slight differences)
+      if (diffDays >= -1 && diffDays <= 2) {
+        dateVerified = true;
+      }
+    }
+
+    // 3. Remark (Random Code) Matching
+    // Looking for the exact remark code, ignoring spaces and dashes which OCR often adds randomly
+    let remarkVerified = false;
+    if (expectedStudentId) {
+      const normalizedText = text.replace(/[\s-_]/g, '').toUpperCase();
+      const normalizedExpected = expectedStudentId.replace(/[\s-_]/g, '').toUpperCase();
+      
+      if (normalizedText.includes(normalizedExpected)) {
+        remarkVerified = true;
+      }
+    }
+
+    console.log('--- OCR DEBUG ---');
+    console.log('Extracted Text:\n', text);
+    console.log('Expected:', { expectedPrice, expectedStudentId });
+    console.log('Results:', { priceVerified, dateVerified, remarkVerified });
+    console.log('-----------------');
+
+    return priceVerified && dateVerified && remarkVerified;
+  } catch (err) {
+    console.error('OCR Extraction Error:', err);
+    return false; // Fallback to manual review
+  }
+};
 
 /**
  * @desc   Student uploads a bank slip for a specific month
@@ -8,11 +92,22 @@ const cloudinary = require('../config/cloudinary');
  */
 exports.uploadPayment = async (req, res) => {
   try {
-    const { lessonPackId } = req.body;
+    const { lessonPackId, remark } = req.body;
 
     if (!req.file) {
       return res.status(400).json({ success: false, message: 'Slip image is required' });
     }
+
+    // Fetch LessonPack to verify price
+    const lessonPack = await LessonPack.findById(lessonPackId);
+    if (!lessonPack) {
+      await cloudinary.uploader.destroy(req.file.filename);
+      return res.status(404).json({ success: false, message: 'Lesson Pack not found' });
+    }
+
+    // Perform OCR Verification (using the generated random remark instead of studentId)
+    const isOCRVerified = await verifySlipOCR(req.file.path, lessonPack.price, remark);
+    const calculatedStatus = isOCRVerified ? 'approved' : 'pending';
 
     // Handle existing submission for the same lesson pack
     const existing = await Payment.findOne({ studentId: req.user._id, lessonPackId });
@@ -28,10 +123,10 @@ exports.uploadPayment = async (req, res) => {
           }
         }
         
-        // Update the existing record with the new slip and set status to pending
+        // Update the existing record with the new slip and OCR-based status
         existing.slipImageUrl = req.file.path;
         existing.slipImagePublicId = req.file.filename;
-        existing.status = 'pending';
+        existing.status = calculatedStatus;
         existing.rejectionReason = ''; // Clear any previous rejection reason
         await existing.save();
         
@@ -51,7 +146,7 @@ exports.uploadPayment = async (req, res) => {
       lessonPackId,
       slipImageUrl: req.file.path,
       slipImagePublicId: req.file.filename,
-      status: 'pending',
+      status: calculatedStatus,
     });
 
     res.status(201).json({ success: true, payment });

@@ -120,4 +120,7 @@ router.get('/video/:materialId', protect, async (req, res) => {
   }
 });
 
+const { getLandingTeacher } = require('../controllers/settingController');
+router.get('/settings/landing-teacher', getLandingTeacher);
+
 module.exports = router;

@@ -135,7 +135,80 @@ export default function AdminDashboard() {
             </div>
           </div>
         </div>
+
+        {/* Site Customization */}
+        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+          <div className="px-6 py-4 border-b border-slate-100">
+            <h3 className="font-semibold text-slate-900">Site Customization</h3>
+            <p className="text-slate-500 text-sm mt-1">Manage the teacher profile displayed on the public landing page hero section.</p>
+          </div>
+          <div className="p-6">
+            <LandingTeacherForm />
+          </div>
+        </div>
       </div>
     </DashboardLayout>
+  );
+}
+
+// Simple internal component to manage the form state
+function LandingTeacherForm() {
+  const [data, setData] = useState({ name: '', qualifications: '', imageUrl: '' });
+  const [file, setFile] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [msg, setMsg] = useState('');
+
+  useEffect(() => {
+    api.get('/proxy/settings/landing-teacher')
+      .then(res => {
+        if (res.data?.setting) setData(res.data.setting);
+      })
+      .catch(() => {});
+  }, []);
+
+  const handleSave = async (e) => {
+    e.preventDefault();
+    setLoading(true); setMsg('');
+    try {
+      const fd = new FormData();
+      if (data.name) fd.append('name', data.name);
+      if (data.qualifications) fd.append('qualifications', data.qualifications);
+      if (file) fd.append('image', file);
+
+      const res = await api.post('/admin/settings/landing-teacher', fd, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      setData(res.data.setting);
+      setFile(null);
+      setMsg('Teacher profile updated successfully!');
+    } catch (err) {
+      setMsg('Failed to update: ' + (err.response?.data?.message || err.message));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <form onSubmit={handleSave} className="max-w-xl space-y-4">
+      {msg && <div className="p-3 bg-blue-50 text-blue-700 rounded-lg text-sm mb-4">{msg}</div>}
+      <div>
+        <label className="label">Teacher Name</label>
+        <input className="input" value={data.name || ''} onChange={e => setData({...data, name: e.target.value})} placeholder="e.g. Mr. Suresh" required />
+      </div>
+      <div>
+        <label className="label">Qualifications</label>
+        <input className="input" value={data.qualifications || ''} onChange={e => setData({...data, qualifications: e.target.value})} placeholder="e.g. M.Sc. | B.Ed. Hons." required />
+      </div>
+      <div>
+        <label className="label">Profile Image (optional)</label>
+        {data.imageUrl && !file && (
+          <img src={data.imageUrl} alt="Current profile" className="w-20 h-20 rounded-full object-cover mb-2 border-2 border-primary-100" />
+        )}
+        <input type="file" accept="image/*" onChange={e => setFile(e.target.files[0])} className="input p-2" />
+      </div>
+      <button type="submit" disabled={loading} className="btn-primary mt-2">
+        {loading ? 'Saving...' : 'Save Teacher Profile'}
+      </button>
+    </form>
   );
 }

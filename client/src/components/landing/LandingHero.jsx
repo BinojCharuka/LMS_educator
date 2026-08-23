@@ -1,6 +1,22 @@
 import { Link } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import api from '../../api/axios';
 
 export default function LandingHero() {
+  const [teacher, setTeacher] = useState({
+    name: 'Mr. Suresh',
+    qualifications: 'M.Sc. | B.Ed. Hons.',
+    imageUrl: ''
+  });
+
+  useEffect(() => {
+    api.get('/proxy/settings/landing-teacher')
+      .then(res => {
+        if (res.data?.setting) setTeacher(res.data.setting);
+      })
+      .catch(console.error);
+  }, []);
+
   return (
     <section className="pt-28 pb-16 px-6 bg-gradient-to-br from-slate-50 via-white to-primary-50 overflow-hidden">
       <div className="max-w-6xl mx-auto grid lg:grid-cols-2 gap-12 items-center">
@@ -50,19 +66,38 @@ export default function LandingHero() {
         </div>
 
         {/* Right — Visual card */}
-        <div className="relative flex justify-center lg:justify-end">
-          {/* Main card */}
-          <div className="relative w-80 h-96 rounded-3xl bg-gradient-to-br from-primary-600 to-violet-600 shadow-2xl shadow-primary-200 flex items-center justify-center overflow-hidden">
-            {/* Decorative circles */}
-            <div className="absolute -top-10 -right-10 w-40 h-40 bg-white/10 rounded-full" />
-            <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-white/10 rounded-full" />
-            <div className="text-center text-white px-8 relative z-10">
-              <div className="w-20 h-20 bg-white/20 rounded-full mx-auto mb-4 flex items-center justify-center text-4xl">🎓</div>
-              <p className="font-display font-bold text-2xl">Mr. Suresh</p>
-              <p className="text-primary-200 text-sm mt-1">M.Sc. | B.Ed. Hons.</p>
-              <p className="text-white/80 text-xs mt-3 leading-relaxed">12+ Years of dedicated teaching experience in Advanced Level subjects</p>
+        <div className="relative flex justify-center lg:justify-end mt-10 lg:mt-0">
+          
+          {teacher.imageUrl ? (
+            <div className="relative w-full max-w-sm lg:max-w-md flex justify-center items-end">
+              {/* Background Glow */}
+              <div className="absolute inset-0 bg-primary-400/20 blur-[80px] rounded-full" />
+              
+              {/* Floating Image */}
+              <img 
+                src={teacher.imageUrl} 
+                alt={teacher.name} 
+                className="relative z-10 w-full h-auto max-h-[500px] object-contain drop-shadow-[0_20px_20px_rgba(0,0,0,0.15)] transition-transform duration-700 hover:-translate-y-2" 
+              />
+              
+              {/* Floating Name Badge */}
+              <div className="absolute top-12 -left-4 lg:-left-12 z-20 bg-white/90 backdrop-blur-md rounded-2xl shadow-xl px-6 py-3 border border-white/50 text-left whitespace-nowrap">
+                <p className="font-display font-bold text-slate-800 text-lg">{teacher.name}</p>
+                <p className="text-primary-600 text-sm font-medium">{teacher.qualifications}</p>
+              </div>
             </div>
-          </div>
+          ) : (
+            <div className="relative w-80 h-96 rounded-3xl bg-gradient-to-br from-primary-600 to-violet-600 shadow-2xl shadow-primary-200 flex items-center justify-center overflow-hidden">
+              <div className="absolute -top-10 -right-10 w-40 h-40 bg-white/10 rounded-full" />
+              <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-white/10 rounded-full" />
+              <div className="text-center text-white px-8 relative z-10 w-full">
+                <div className="w-20 h-20 bg-white/20 rounded-full mx-auto mb-4 flex items-center justify-center text-4xl">🎓</div>
+                <p className="font-display font-bold text-2xl line-clamp-1">{teacher.name}</p>
+                <p className="text-primary-200 text-sm mt-1 line-clamp-1">{teacher.qualifications}</p>
+                <p className="text-white/80 text-xs mt-3 leading-relaxed">12+ Years of dedicated teaching experience in Advanced Level subjects</p>
+              </div>
+            </div>
+          )}
 
           {/* Floating stat card */}
           <div className="absolute -bottom-4 -left-4 bg-white rounded-2xl shadow-xl px-4 py-3 flex items-center gap-3 border border-slate-100">

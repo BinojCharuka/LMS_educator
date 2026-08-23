@@ -85,13 +85,15 @@ export default function PaymentApprovals() {
 
                 <p className="text-slate-500 text-xs mb-3">{new Date(p.createdAt).toLocaleDateString()}</p>
 
-                {p.status === 'pending' && (
+                {(p.status === 'pending' || p.status === 'approved') && (
                   <div className="flex gap-2">
-                    <button onClick={() => handleAction(p._id, 'approved')}
-                      disabled={!!actionLoading}
-                      className="btn-success flex-1 justify-center text-xs py-2">
-                      ✓ Approve
-                    </button>
+                    {p.status === 'pending' && (
+                      <button onClick={() => handleAction(p._id, 'approved')}
+                        disabled={!!actionLoading}
+                        className="btn-success flex-1 justify-center text-xs py-2">
+                        ✓ Approve
+                      </button>
+                    )}
                     <button onClick={() => setSelected(p)}
                       className="btn-danger flex-1 justify-center text-xs py-2">
                       ✕ Reject
@@ -115,7 +117,7 @@ export default function PaymentApprovals() {
               <button onClick={() => setSelected(null)} className="text-slate-400 hover:text-slate-600 text-xl">✕</button>
             </div>
             <img src={selected.slipImageUrl} alt="Slip" className="w-full rounded-xl mb-4 max-h-80 object-contain bg-slate-100 border border-slate-200" />
-            {selected.status === 'pending' && (
+            {(selected.status === 'pending' || selected.status === 'approved') && (
               <>
                 <div className="mb-3">
                   <label className="label">Rejection reason (optional)</label>
@@ -123,7 +125,9 @@ export default function PaymentApprovals() {
                     placeholder="e.g. Slip is unclear..." />
                 </div>
                 <div className="flex gap-3">
-                  <button onClick={() => handleAction(selected._id, 'approved')} className="btn-success flex-1 justify-center">✓ Approve</button>
+                  {selected.status === 'pending' && (
+                    <button onClick={() => handleAction(selected._id, 'approved')} className="btn-success flex-1 justify-center">✓ Approve</button>
+                  )}
                   <button onClick={() => handleAction(selected._id, 'rejected')} className="btn-danger flex-1 justify-center">✕ Reject</button>
                 </div>
               </>

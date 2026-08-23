@@ -7,6 +7,74 @@
     <title>Educator LMS</title>
   </head>
   <body>
+    <style>
+      #global-preloader {
+        position: fixed;
+        inset: 0;
+        background: #ffffff;
+        z-index: 999999;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        transition: opacity 0.8s ease, visibility 0.8s ease;
+      }
+      .fluid-blob {
+        width: 100px;
+        height: 100px;
+        background: linear-gradient(135deg, #4f46e5, #8b5cf6, #ec4899);
+        animation: morph 3s ease-in-out infinite, spin 4s linear infinite;
+        box-shadow: 0 10px 40px -10px rgba(79, 70, 229, 0.7);
+        margin-bottom: 24px;
+      }
+      .loading-text {
+        font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        font-weight: 700;
+        font-size: 0.85rem;
+        letter-spacing: 0.15em;
+        text-transform: uppercase;
+        background: linear-gradient(135deg, #4f46e5, #ec4899);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        animation: pulse-text 2s ease-in-out infinite;
+      }
+      @keyframes morph {
+        0% { border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%; }
+        50% { border-radius: 30% 60% 70% 40% / 50% 60% 30% 60%; }
+        100% { border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%; }
+      }
+      @keyframes spin {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+      }
+      @keyframes pulse-text {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.5; }
+      }
+      body.loading-active {
+        overflow: hidden;
+      }
+    </style>
+    <div id="global-preloader">
+      <div class="fluid-blob"></div>
+      <div class="loading-text">Loading Experience...</div>
+    </div>
+    <script>
+      document.body.classList.add('loading-active');
+      const removeLoader = () => {
+        const preloader = document.getElementById('global-preloader');
+        if (preloader) {
+          preloader.style.opacity = '0';
+          preloader.style.visibility = 'hidden';
+          document.body.classList.remove('loading-active');
+          setTimeout(() => preloader.remove(), 800);
+        }
+      };
+      // Wait for all assets (including images) to load
+      window.addEventListener('load', removeLoader);
+      // Fallback in case an image hangs for too long
+      setTimeout(removeLoader, 5000);
+    </script>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>

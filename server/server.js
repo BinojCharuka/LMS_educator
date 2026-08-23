@@ -1,7 +1,10 @@
 require('dotenv').config();
 const express = require('express');
 const cors    = require('cors');
+const dns = require('dns');
 
+// Force IPv4 DNS resolution for MongoDB Atlas SRV issues
+dns.setDefaultResultOrder('ipv4first');
 
 // ── Initialize Express ───────────────────────────────────────────────────────
 const app = express();
@@ -18,17 +21,33 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Ensure DB is connected before handling any requests (Serverless Best Practice)
+let dbConnectPromise = null;
+
 app.use(async (req, res, next) => {
-  if (mongoose.connection.readyState !== 1) {
-    try {
-      await mongoose.connect(process.env.MONGO_URI, { serverSelectionTimeoutMS: 5000 });
-      console.log('✅ MongoDB Connected (Middleware)');
-    } catch (err) {
-      console.error('❌ MongoDB Connection Error:', err.message);
-      return res.status(500).json({ success: false, message: 'Database connection failed' });
-    }
+  if (mongoose.connection.readyState === 1) {
+    return next();
   }
-  next();
+
+  if (!dbConnectPromise) {
+    dbConnectPromise = mongoose.connect(process.env.MONGO_URI, { 
+      serverSelectionTimeoutMS: 5000,
+      family: 4 
+    }).then(conn => {
+      console.log('✅ MongoDB Connected (Middleware)');
+      return conn;
+    }).catch(err => {
+      dbConnectPromise = null; // reset to allow retries
+      throw err;
+    });
+  }
+
+  try {
+    await dbConnectPromise;
+    next();
+  } catch (err) {
+    console.error('❌ MongoDB Connection Error:', err.message);
+    return res.status(500).json({ success: false, message: 'Database connection failed' });
+  }
 });
 
 // ── Routes ───────────────────────────────────────────────────────────────────

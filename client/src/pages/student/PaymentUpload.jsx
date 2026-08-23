@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useLocation } from 'react-router-dom';
 import DashboardLayout from '../../components/layout/DashboardLayout';
 import api from '../../api/axios';
@@ -16,6 +16,17 @@ export default function PaymentUpload() {
   const [success, setSuccess] = useState('');
   const [error,   setError]   = useState('');
   const [payments, setPayments] = useState([]);
+
+  // Generate a random remark code for OCR verification
+  // Exclude ambiguous characters (0, O, 1, I, l, 5, S, 8, B) to improve Tesseract accuracy
+  const randomRemark = useMemo(() => {
+    const chars = 'ACDEFGHJKLMNPQRTUVWXYZ234679';
+    let result = '';
+    for (let i = 0; i < 6; i++) {
+      result += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return 'LMS-' + result;
+  }, []);
 
   useEffect(() => {
     api.get('/payments/my').then(r => setPayments(r.data.payments || [])).catch(() => {});
@@ -36,9 +47,10 @@ export default function PaymentUpload() {
     try {
       const fd = new FormData();
       fd.append('lessonPackId', lessonPackId);
+      fd.append('remark', randomRemark); // Send the generated remark
       fd.append('slip', file);
       await api.post('/payments', fd, { headers: { 'Content-Type': 'multipart/form-data' } });
-      setSuccess(`Payment slip submitted! Awaiting teacher approval.`);
+      setSuccess(`Payment slip submitted! Awaiting verification.`);
       setFile(null); setPreview(null); setLessonPackId('');
     } catch (err) {
       setError(err.response?.data?.message || 'Upload failed.');
@@ -120,6 +132,14 @@ export default function PaymentUpload() {
                       <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
                     </div>
                   </div>
+                </div>
+
+                <div className="bg-indigo-50 border-2 border-indigo-200 rounded-2xl p-5 mb-6 text-center">
+                  <p className="text-sm text-indigo-800 mb-2 font-medium">Please write this exactly as the **Reference / Remark** on your bank transfer:</p>
+                  <div className="inline-block bg-white border-2 border-indigo-500 rounded-xl px-6 py-3 font-mono font-bold text-2xl tracking-widest text-indigo-700 shadow-sm">
+                    {randomRemark}
+                  </div>
+                  <p className="text-xs text-indigo-600 mt-3 font-semibold">Auto-verification requires this exact code, the correct price, and a date within the last 2 days.</p>
                 </div>
 
                 <div>
