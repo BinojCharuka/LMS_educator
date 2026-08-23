@@ -105,10 +105,6 @@ exports.uploadPayment = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Lesson Pack not found' });
     }
 
-    // Perform OCR Verification (using the generated random remark instead of studentId)
-    const isOCRVerified = await verifySlipOCR(req.file.path, lessonPack.price, remark);
-    const calculatedStatus = isOCRVerified ? 'approved' : 'pending';
-
     // Handle existing submission for the same lesson pack
     const existing = await Payment.findOne({ studentId: req.user._id, lessonPackId });
     
@@ -123,14 +119,27 @@ exports.uploadPayment = async (req, res) => {
           }
         }
         
-        // Update the existing record with the new slip and OCR-based status
+        // Update the existing record with the new slip and set to pending while OCR runs
         existing.slipImageUrl = req.file.path;
         existing.slipImagePublicId = req.file.filename;
-        existing.status = calculatedStatus;
+        existing.status = 'pending';
         existing.rejectionReason = ''; // Clear any previous rejection reason
         await existing.save();
         
-        return res.status(200).json({ success: true, payment: existing });
+        // Respond immediately so user doesn't wait for OCR
+        res.status(200).json({ success: true, payment: existing });
+
+        // Run OCR in background
+        verifySlipOCR(req.file.path, lessonPack.price, remark)
+          .then(async (isOCRVerified) => {
+            if (isOCRVerified) {
+              existing.status = 'approved';
+              await existing.save();
+            }
+          })
+          .catch(err => console.error('Background OCR Error:', err));
+          
+        return;
       } else {
         // If pending or approved, block the submission and delete the just-uploaded file
         await cloudinary.uploader.destroy(req.file.filename);
@@ -146,10 +155,22 @@ exports.uploadPayment = async (req, res) => {
       lessonPackId,
       slipImageUrl: req.file.path,
       slipImagePublicId: req.file.filename,
-      status: calculatedStatus,
+      status: 'pending', // Set to pending initially
     });
 
+    // Respond immediately so user doesn't wait for OCR
     res.status(201).json({ success: true, payment });
+
+    // Run OCR in background
+    verifySlipOCR(req.file.path, lessonPack.price, remark)
+      .then(async (isOCRVerified) => {
+        if (isOCRVerified) {
+          payment.status = 'approved';
+          await payment.save();
+        }
+      })
+      .catch(err => console.error('Background OCR Error:', err));
+
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
   }

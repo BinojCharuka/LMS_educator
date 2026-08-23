@@ -70,10 +70,10 @@
           setTimeout(() => preloader.remove(), 800);
         }
       };
-      // Wait for all assets (including images) to load
-      window.addEventListener('load', removeLoader);
+      // Wait for React to signal it's ready (including async images)
+      window.addEventListener('app-ready', removeLoader);
       // Fallback in case an image hangs for too long
-      setTimeout(removeLoader, 5000);
+      setTimeout(removeLoader, 8000);
     </script>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>

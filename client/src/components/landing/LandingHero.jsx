@@ -12,9 +12,20 @@ export default function LandingHero() {
   useEffect(() => {
     api.get('/proxy/settings/landing-teacher')
       .then(res => {
-        if (res.data?.setting) setTeacher(res.data.setting);
+        if (res.data?.setting) {
+          setTeacher(res.data.setting);
+          // If there is no custom image, signal that we are ready immediately
+          if (!res.data.setting.imageUrl) {
+            window.dispatchEvent(new Event('app-ready'));
+          }
+        } else {
+          window.dispatchEvent(new Event('app-ready'));
+        }
       })
-      .catch(console.error);
+      .catch((err) => {
+        console.error(err);
+        window.dispatchEvent(new Event('app-ready'));
+      });
   }, []);
 
   return (
@@ -77,6 +88,8 @@ export default function LandingHero() {
               <img 
                 src={teacher.imageUrl} 
                 alt={teacher.name} 
+                onLoad={() => window.dispatchEvent(new Event('app-ready'))}
+                onError={() => window.dispatchEvent(new Event('app-ready'))}
                 className="relative z-10 w-full h-auto max-h-[500px] object-contain drop-shadow-[0_20px_20px_rgba(0,0,0,0.15)] transition-transform duration-700 hover:-translate-y-2" 
               />
               
