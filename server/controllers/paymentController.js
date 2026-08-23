@@ -127,19 +127,7 @@ exports.uploadPayment = async (req, res) => {
         await existing.save();
         
         // Respond immediately so user doesn't wait for OCR
-        res.status(200).json({ success: true, payment: existing });
-
-        // Run OCR in background
-        verifySlipOCR(req.file.path, lessonPack.price, remark)
-          .then(async (isOCRVerified) => {
-            if (isOCRVerified) {
-              existing.status = 'approved';
-              await existing.save();
-            }
-          })
-          .catch(err => console.error('Background OCR Error:', err));
-          
-        return;
+        return res.status(200).json({ success: true, payment: existing });
       } else {
         // If pending or approved, block the submission and delete the just-uploaded file
         await cloudinary.uploader.destroy(req.file.filename);
@@ -158,19 +146,42 @@ exports.uploadPayment = async (req, res) => {
       status: 'pending', // Set to pending initially
     });
 
-    // Respond immediately so user doesn't wait for OCR
+    // Respond immediately. The frontend will call the verify endpoint next.
     res.status(201).json({ success: true, payment });
 
-    // Run OCR in background
-    verifySlipOCR(req.file.path, lessonPack.price, remark)
-      .then(async (isOCRVerified) => {
-        if (isOCRVerified) {
-          payment.status = 'approved';
-          await payment.save();
-        }
-      })
-      .catch(err => console.error('Background OCR Error:', err));
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
 
+/**
+ * @desc   Verify a pending payment using OCR (Called immediately after upload)
+ * @route  POST /api/payments/:id/verify
+ * @access Private (student)
+ */
+exports.verifyPayment = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { remark } = req.body;
+
+    const payment = await Payment.findOne({ _id: id, studentId: req.user._id }).populate('lessonPackId');
+    if (!payment) {
+      return res.status(404).json({ success: false, message: 'Payment not found' });
+    }
+
+    if (payment.status !== 'pending') {
+      return res.status(400).json({ success: false, message: `Payment is already ${payment.status}` });
+    }
+
+    // Run OCR synchronously here. The frontend will show a "Verifying" spinner.
+    const isOCRVerified = await verifySlipOCR(payment.slipImageUrl, payment.lessonPackId.price, remark);
+    
+    if (isOCRVerified) {
+      payment.status = 'approved';
+      await payment.save();
+    }
+
+    res.status(200).json({ success: true, payment });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
   }
