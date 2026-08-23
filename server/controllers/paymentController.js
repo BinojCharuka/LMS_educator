@@ -11,7 +11,13 @@ const Tesseract = require('tesseract.js');
  */
 const verifySlipOCR = async (imageUrl, expectedPrice, expectedStudentId) => {
   try {
-    const { data: { text } } = await Tesseract.recognize(imageUrl, 'eng');
+    const ocrPromise = Tesseract.recognize(imageUrl, 'eng');
+    const timeoutPromise = new Promise((_, reject) => {
+      setTimeout(() => reject(new Error('OCR Timeout')), 10000);
+    });
+    
+    const result = await Promise.race([ocrPromise, timeoutPromise]);
+    const text = result.data.text;
     
     // 1. Price Matching
     // Look for 'Rs', 'LKR', 'Amount', 'Price', 'Total' followed by a number
