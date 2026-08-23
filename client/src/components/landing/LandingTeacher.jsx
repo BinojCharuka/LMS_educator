@@ -1,4 +1,21 @@
+import { useState, useEffect } from 'react';
+import api from '../../api/axios';
+
 export default function LandingTeacher() {
+  const [teacher, setTeacher] = useState({
+    name: 'Mr. Suresh',
+    qualifications: 'M.Sc. | B.Ed. Hons.',
+    imageUrl: ''
+  });
+
+  useEffect(() => {
+    api.get('/proxy/settings/landing-teacher')
+      .then(res => {
+        if (res.data?.setting) setTeacher(res.data.setting);
+      })
+      .catch(console.error);
+  }, []);
+
   const quals = [
     'M.Sc. Physical Science — University of Colombo',
     'B.Ed. Honours — National Institute of Education',
@@ -15,14 +32,28 @@ export default function LandingTeacher() {
         {/* Photo card */}
         <div className="flex justify-center lg:justify-start">
           <div className="relative">
-            <div className="w-64 h-72 rounded-3xl bg-gradient-to-br from-primary-500 to-violet-600 flex flex-col items-center justify-center shadow-xl shadow-primary-100">
-              <div className="w-24 h-24 rounded-full bg-white/20 flex items-center justify-center text-5xl mb-3">👨‍🏫</div>
-              <p className="font-display font-bold text-white text-lg">Mr. Suresh J.</p>
-              <p className="text-primary-200 text-sm">M.Sc. | B.Ed. Hons.</p>
-            </div>
-            <div className="absolute -bottom-4 -right-4 bg-white rounded-2xl shadow-lg border border-slate-100 px-4 py-3 text-center">
+            {teacher.imageUrl ? (
+              <div className="relative w-64 md:w-80 flex justify-center items-end mt-8">
+                {/* Background Glow */}
+                <div className="absolute inset-0 bg-primary-400/20 blur-[60px] rounded-full" />
+                
+                {/* Floating Image */}
+                <img 
+                  src={teacher.imageUrl} 
+                  alt={teacher.name} 
+                  className="relative z-10 w-full h-auto max-h-[450px] object-contain drop-shadow-[0_20px_20px_rgba(0,0,0,0.15)] transition-transform duration-700 hover:-translate-y-2" 
+                />
+              </div>
+            ) : (
+              <div className="w-64 h-72 rounded-3xl bg-gradient-to-br from-primary-500 to-violet-600 flex flex-col items-center justify-center shadow-xl shadow-primary-100">
+                <div className="w-24 h-24 rounded-full bg-white/20 flex items-center justify-center text-5xl mb-3">👨‍🏫</div>
+                <p className="font-display font-bold text-white text-lg">{teacher.name}</p>
+                <p className="text-primary-200 text-sm">{teacher.qualifications}</p>
+              </div>
+            )}
+            <div className="absolute -bottom-4 -right-4 z-20 bg-white/90 backdrop-blur-md rounded-2xl shadow-lg border border-slate-100/50 px-4 py-3 text-center">
               <p className="font-display font-extrabold text-primary-600 text-2xl">12+</p>
-              <p className="text-slate-500 text-xs">Years Teaching</p>
+              <p className="text-slate-500 text-xs font-medium">Years Teaching</p>
             </div>
           </div>
         </div>
