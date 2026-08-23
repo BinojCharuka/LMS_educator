@@ -90,6 +90,7 @@ export default function App() {
               <Route path="/admin"       element={<AdminDashboard />} />
               <Route path="/admin/users" element={<UserManager />} />
               <Route path="/admin/shield" element={<ActivityLog />} />
+              <Route path="/admin/settings" element={<SystemSettings />} />
             </Route>
 
             {/* ── Fallback ─────────────────────────────────────── */}

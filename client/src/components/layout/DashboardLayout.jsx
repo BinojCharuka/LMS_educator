@@ -44,6 +44,7 @@ const navConfig = {
     { to: '/admin',       label: 'Overview',      icon: icons.home },
     { to: '/admin/users', label: 'User Management', icon: icons.users },
     { to: '/admin/shield',label: 'Activity Log',   icon: icons.shield },
+    { to: '/admin/settings', label: 'System Settings', icon: icons.settings },
   ],
 };
 
