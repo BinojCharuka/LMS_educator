@@ -61,6 +61,7 @@ app.use('/api/admin',     require('./routes/adminRoutes'));
 app.use('/api/proxy',     require('./routes/proxyRoutes'));
 app.use('/api/announcements', require('./routes/announcementRoutes'));
 app.use('/api/live-classes', require('./routes/liveClassRoutes'));
+app.use('/api/system',    require('./routes/systemRoutes'));
 app.use('/api/lesson-packs', require('./routes/lessonPackRoutes')); // <-- Added this
 
 // ── Health Check ─────────────────────────────────────────────────────────────

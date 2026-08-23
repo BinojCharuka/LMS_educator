@@ -25,6 +25,7 @@ const StudentManager    = lazy(() => import('./pages/teacher/StudentManager'));
 const ResourceManager   = lazy(() => import('./pages/teacher/ResourceManager'));
 const AnnouncementManager = lazy(() => import('./pages/teacher/AnnouncementManager'));
 const LessonPackManager = lazy(() => import('./pages/teacher/LessonPackManager'));
+const SystemSettings    = lazy(() => import('./pages/teacher/SystemSettings'));
 
 // Admin
 const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'));
@@ -81,6 +82,7 @@ export default function App() {
               <Route path="/teacher/students"  element={<StudentManager />} />
               <Route path="/teacher/announcements" element={<AnnouncementManager />} />
               <Route path="/teacher/packs" element={<LessonPackManager />} />
+              <Route path="/teacher/settings" element={<SystemSettings />} />
             </Route>
 
             {/* ── Admin routes ─────────────────────────────────── */}
