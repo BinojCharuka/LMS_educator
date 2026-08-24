@@ -94,16 +94,16 @@ export default function LandingHero() {
               />
               
               {/* Floating Name Badge */}
-              <div className="absolute top-12 -left-4 lg:-left-12 z-20 bg-white/90 backdrop-blur-md rounded-2xl shadow-xl px-6 py-3 border border-white/50 text-left whitespace-nowrap">
+              <div className="absolute top-12 -left-8 lg:-left-24 z-30 bg-white/90 backdrop-blur-md rounded-2xl shadow-xl px-6 py-3 border border-white/50 text-left whitespace-nowrap">
                 <p className="font-display font-bold text-slate-800 text-lg">{teacher.name}</p>
                 <p className="text-primary-600 text-sm font-medium">{teacher.qualifications}</p>
               </div>
             </div>
           ) : (
-            <div className="relative w-80 h-96 rounded-3xl bg-gradient-to-br from-primary-600 to-violet-600 shadow-2xl shadow-primary-200 flex items-center justify-center overflow-hidden">
+            <div className="relative w-80 h-96 rounded-3xl bg-gradient-to-br from-primary-600 to-violet-600 shadow-2xl shadow-primary-200 flex items-center justify-center overflow-hidden z-10">
               <div className="absolute -top-10 -right-10 w-40 h-40 bg-white/10 rounded-full" />
               <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-white/10 rounded-full" />
-              <div className="text-center text-white px-8 relative z-10 w-full">
+              <div className="text-center text-white px-8 relative z-20 w-full">
                 <div className="w-20 h-20 bg-white/20 rounded-full mx-auto mb-4 flex items-center justify-center text-4xl">🎓</div>
                 <p className="font-display font-bold text-2xl line-clamp-1">{teacher.name}</p>
                 <p className="text-primary-200 text-sm mt-1 line-clamp-1">{teacher.qualifications}</p>
@@ -113,7 +113,7 @@ export default function LandingHero() {
           )}
 
           {/* Floating stat card */}
-          <div className="absolute -bottom-4 -left-4 bg-white rounded-2xl shadow-xl px-4 py-3 flex items-center gap-3 border border-slate-100">
+          <div className="absolute -bottom-6 -left-8 lg:-left-16 z-30 bg-white rounded-2xl shadow-xl px-4 py-3 flex items-center gap-3 border border-slate-100">
             <div className="w-10 h-10 bg-emerald-50 rounded-xl flex items-center justify-center text-emerald-600 font-bold text-lg">✓</div>
             <div>
               <p className="font-bold text-slate-800 text-sm">98% Pass Rate</p>
@@ -122,7 +122,7 @@ export default function LandingHero() {
           </div>
 
           {/* Floating badge */}
-          <div className="absolute -top-3 -right-3 bg-white rounded-2xl shadow-xl px-4 py-3 border border-slate-100">
+          <div className="absolute -top-6 -right-6 lg:-right-12 z-30 bg-white rounded-2xl shadow-xl px-4 py-3 border border-slate-100">
             <p className="text-xs text-slate-500">Active Students</p>
             <p className="font-display font-bold text-primary-600 text-xl">200+</p>
           </div>
