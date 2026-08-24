@@ -56,7 +56,7 @@ export default function StudentDashboard() {
               )}
             </div>
             <h1 className="font-display text-3xl md:text-4xl font-semibold mb-2">
-              Welcome back, {user?.name?.split(' ')[0]}!
+              Welcome back, {(user?.name || '').split(' ')[0]}!
             </h1>
             <p className="text-primary-100">
               You have a live class in <strong className="text-white">2 days</strong>. Don't miss it!

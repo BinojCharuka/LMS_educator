@@ -95,7 +95,7 @@ function Sidebar({ onClose }) {
             {user?.profileImage ? (
               <img src={user.profileImage} alt={user?.name} className="w-full h-full object-cover" />
             ) : (
-              user?.name?.charAt(0).toUpperCase()
+              user?.name?.charAt(0)?.toUpperCase() || 'U'
             )}
           </div>
           <div className="min-w-0">
@@ -337,7 +337,7 @@ export default function DashboardLayout({ children }) {
                   {user?.profileImage ? (
                     <img src={user.profileImage} alt={user?.name} className="w-full h-full object-cover" />
                   ) : (
-                    user?.name?.substring(0, 2).toUpperCase() || 'US'
+                    user?.name?.substring(0, 2)?.toUpperCase() || 'US'
                   )}
                 </div>
               </button>
@@ -422,7 +422,7 @@ export default function DashboardLayout({ children }) {
                 ) : user?.profileImage ? (
                   <img src={user.profileImage} alt={user?.name} className="w-full h-full object-cover" />
                 ) : (
-                  user?.name?.substring(0, 2).toUpperCase() || 'US'
+                  user?.name?.substring(0, 2)?.toUpperCase() || 'US'
                 )}
                 
                 {isEditingProfile && (
