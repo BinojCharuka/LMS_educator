@@ -76,7 +76,7 @@ function Sidebar({ onClose }) {
       {/* Logo */}
       <div className="flex items-center justify-between p-5 border-b border-slate-200">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary-500 to-violet-500 flex items-center justify-center">
+          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary-500 to-violet-500 flex items-center justify-center overflow-hidden">
             <span className="text-white font-bold text-sm">E</span>
           </div>
           <span className="font-display font-bold text-slate-900 text-lg tracking-tight">Educator</span>
@@ -91,8 +91,12 @@ function Sidebar({ onClose }) {
       {/* User info */}
       <div className="p-4 border-b border-slate-200">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary-500 to-violet-600 flex items-center justify-center text-white font-bold">
-            {user?.name?.charAt(0).toUpperCase()}
+          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary-500 to-violet-600 flex items-center justify-center text-white font-bold overflow-hidden">
+            {user?.profileImage ? (
+              <img src={user.profileImage} alt={user?.name} className="w-full h-full object-cover" />
+            ) : (
+              user?.name?.charAt(0).toUpperCase()
+            )}
           </div>
           <div className="min-w-0">
             <p className="text-sm font-semibold text-slate-900 truncate">{user?.name}</p>
@@ -148,6 +152,8 @@ export default function DashboardLayout({ children }) {
   const [profileName, setProfileName] = useState('');
   const [profileEmail, setProfileEmail] = useState('');
   const [profilePassword, setProfilePassword] = useState('');
+  const [profileImageFile, setProfileImageFile] = useState(null);
+  const [profileImagePreview, setProfileImagePreview] = useState(null);
   const [profileLoading, setProfileLoading] = useState(false);
   const [profileError, setProfileError] = useState('');
   const [profileSuccess, setProfileSuccess] = useState('');
@@ -160,6 +166,8 @@ export default function DashboardLayout({ children }) {
       setProfileName(user.name || '');
       setProfileEmail(user.email || '');
       setProfilePassword('');
+      setProfileImageFile(null);
+      setProfileImagePreview(null);
       setProfileError('');
       setProfileSuccess('');
       setIsEditingProfile(false);
@@ -172,14 +180,20 @@ export default function DashboardLayout({ children }) {
     setProfileError('');
     setProfileSuccess('');
     try {
-      const payload = {
-        name: profileName,
-        email: profileEmail
-      };
+      const formData = new FormData();
+      formData.append('name', profileName);
+      formData.append('email', profileEmail);
       if (profilePassword.trim()) {
-        payload.password = profilePassword;
+        formData.append('password', profilePassword);
       }
-      const { data } = await api.put('/auth/profile', payload);
+      if (profileImageFile) {
+        formData.append('profileImage', profileImageFile);
+      }
+
+      const { data } = await api.put('/auth/profile', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+
       if (data.success) {
         setProfileSuccess('Profile updated successfully!');
         setIsEditingProfile(false);
@@ -317,8 +331,12 @@ export default function DashboardLayout({ children }) {
                   <p className="text-sm font-semibold text-slate-900 leading-tight">{user?.name}</p>
                   <p className="text-xs text-slate-500 capitalize">{user?.role}</p>
                 </div>
-                <div className="w-8 h-8 rounded-full bg-emerald-500 flex items-center justify-center text-white font-bold text-xs select-none">
-                  {user?.name?.substring(0, 2).toUpperCase() || 'US'}
+                <div className="w-8 h-8 rounded-full bg-emerald-500 flex items-center justify-center text-white font-bold text-xs select-none overflow-hidden">
+                  {user?.profileImage ? (
+                    <img src={user.profileImage} alt={user?.name} className="w-full h-full object-cover" />
+                  ) : (
+                    user?.name?.substring(0, 2).toUpperCase() || 'US'
+                  )}
                 </div>
               </button>
 
@@ -396,8 +414,33 @@ export default function DashboardLayout({ children }) {
             
             {/* Avatar block */}
             <div className="absolute top-14 left-6">
-              <div className="w-20 h-20 rounded-2xl bg-emerald-500 border-4 border-white flex items-center justify-center text-white font-bold text-2xl shadow-md select-none">
-                {user?.name?.substring(0, 2).toUpperCase() || 'US'}
+              <div className="w-20 h-20 rounded-2xl bg-emerald-500 border-4 border-white flex items-center justify-center text-white font-bold text-2xl shadow-md select-none overflow-hidden relative group">
+                {profileImagePreview ? (
+                  <img src={profileImagePreview} alt="Preview" className="w-full h-full object-cover" />
+                ) : user?.profileImage ? (
+                  <img src={user.profileImage} alt={user?.name} className="w-full h-full object-cover" />
+                ) : (
+                  user?.name?.substring(0, 2).toUpperCase() || 'US'
+                )}
+                
+                {isEditingProfile && (
+                  <label className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer z-10">
+                    <svg className="w-6 h-6 text-white mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                    <span className="text-[9px] text-white font-bold tracking-wider">CHANGE</span>
+                    <input 
+                      type="file" 
+                      accept="image/*" 
+                      className="hidden" 
+                      onChange={(e) => {
+                        const file = e.target.files[0];
+                        if (file) {
+                          setProfileImageFile(file);
+                          setProfileImagePreview(URL.createObjectURL(file));
+                        }
+                      }}
+                    />
+                  </label>
+                )}
               </div>
             </div>
             

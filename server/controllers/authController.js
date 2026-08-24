@@ -1,6 +1,7 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const { logActivity } = require('../middleware/logger');
+const cloudinary = require('../config/cloudinary');
 
 // ── Helper: Sign JWT ─────────────────────────────────────────────────────────
 const signToken = (id) =>
@@ -139,6 +140,23 @@ exports.updateProfile = async (req, res) => {
 
     if (name) user.name = name;
     if (password) user.password = password;
+
+    // Handle profile image upload
+    if (req.file) {
+      // If user already has a profile image stored in Cloudinary, delete it
+      if (user.profileImage && user.profileImage.includes('res.cloudinary.com')) {
+        try {
+          const urlParts = user.profileImage.split('/');
+          const filename = urlParts[urlParts.length - 1];
+          const publicId = `educator/profiles/${filename.split('.')[0]}`;
+          await cloudinary.uploader.destroy(publicId);
+        } catch (err) {
+          console.error('Failed to delete old profile image from Cloudinary:', err);
+        }
+      }
+      // Save new image URL
+      user.profileImage = req.file.path;
+    }
 
     await user.save();
 

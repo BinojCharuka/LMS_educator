@@ -26,6 +26,10 @@ const userSchema = new mongoose.Schema(
       minlength: 6,
       select: false, // Never return password in queries by default
     },
+    profileImage: {
+      type: String,
+      default: '',
+    },
     role: {
       type: String,
       enum: ['admin', 'teacher', 'student'],

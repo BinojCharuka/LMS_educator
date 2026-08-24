@@ -88,10 +88,28 @@ const deleteFromR2 = async (key) => {
   }
 };
 
+/**
+ * Cloudinary storage for profile images.
+ */
+const profileImageStorage = new CloudinaryStorage({
+  cloudinary,
+  params: {
+    folder: 'educator/profiles',
+    allowed_formats: ['jpg', 'jpeg', 'png', 'webp'],
+    transformation: [{ width: 400, height: 400, crop: 'fill', gravity: 'face', quality: 'auto', fetch_format: 'auto' }],
+  },
+});
+
 /** Use for course images */
 const uploadCourseImage = multer({
   storage: courseImageStorage,
   limits: { fileSize: 5 * 1024 * 1024 }, // 5 MB max
 });
 
-module.exports = { uploadSlip, uploadMaterial, uploadCourseImage, deleteFromR2 };
+/** Use for profile images */
+const uploadProfileImage = multer({
+  storage: profileImageStorage,
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5 MB max
+});
+
+module.exports = { uploadSlip, uploadMaterial, uploadCourseImage, uploadProfileImage, deleteFromR2 };
