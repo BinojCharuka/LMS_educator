@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import api from '../../services/api';
+import api from '../../api/axios';
 
 const SystemSettings = () => {
   const [metrics, setMetrics] = useState({ mongoSizeBytes: 0, cloudinaryUsageBytes: 0, cloudinaryLimitBytes: 0 });
