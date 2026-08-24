@@ -259,7 +259,7 @@ export default function DashboardLayout({ children }) {
       <div className="flex-1 flex flex-col h-screen overflow-hidden">
         
         {/* Top Header (Mobile menu trigger & Profile) */}
-        <header className="bg-white border-b border-slate-200 sticky top-0 z-30 px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between shrink-0">
+        <header className="bg-white/80 backdrop-blur-xl border border-slate-200/80 lg:border-x-0 lg:border-t-0 lg:border-b-slate-200 sticky top-3 lg:top-0 z-30 mx-3 lg:mx-0 mt-3 lg:mt-0 rounded-2xl lg:rounded-none px-4 sm:px-6 lg:px-8 h-14 lg:h-16 flex items-center justify-between shrink-0 shadow-sm shadow-slate-200/50 lg:shadow-none transition-all duration-300">
           
           <div className="flex items-center gap-4">
             <button 
