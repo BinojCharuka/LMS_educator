@@ -72,7 +72,7 @@ function Sidebar({ onClose }) {
   };
 
   return (
-    <aside className="flex flex-col h-full bg-white border-r border-slate-200 w-64 shrink-0">
+    <aside className="flex flex-col h-full bg-white lg:rounded-2xl lg:shadow-[0_8px_30px_rgb(0,0,0,0.04)] lg:border lg:border-slate-200 border-r border-slate-200 w-64 shrink-0 overflow-hidden transition-all">
       {/* Logo */}
       <div className="flex items-center justify-between p-5 border-b border-slate-200">
         <div className="flex items-center gap-2">
@@ -237,7 +237,7 @@ export default function DashboardLayout({ children }) {
       )}
 
       {/* Sidebar - Desktop & Mobile */}
-      <div className={`fixed inset-y-0 left-0 z-50 transform lg:transform-none lg:static lg:block transition-transform duration-300 w-64 ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+      <div className={`fixed inset-y-0 left-0 z-50 transform lg:transform-none lg:static lg:block transition-transform duration-300 lg:p-4 lg:pr-0 lg:h-screen ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}>
         <Sidebar onClose={() => setMobileMenuOpen(false)} />
       </div>
 
