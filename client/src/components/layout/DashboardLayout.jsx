@@ -72,7 +72,7 @@ function Sidebar({ onClose }) {
   };
 
   return (
-    <aside className="flex flex-col h-full bg-white lg:rounded-2xl lg:shadow-[0_8px_30px_rgb(0,0,0,0.04)] lg:border lg:border-slate-200 border-r border-slate-200 w-64 shrink-0 overflow-hidden transition-all">
+    <aside className="flex flex-col h-full bg-transparent lg:bg-white lg:rounded-2xl lg:shadow-[0_8px_30px_rgb(0,0,0,0.04)] lg:border lg:border-slate-200 lg:border-r w-full lg:w-64 shrink-0 overflow-hidden transition-all">
       {/* Logo */}
       <div className="flex items-center justify-between p-5 border-b border-slate-200">
         <div className="flex items-center gap-2">
@@ -245,21 +245,23 @@ export default function DashboardLayout({ children }) {
       {/* Mobile Sidebar Overlay */}
       {mobileMenuOpen && (
         <div 
-          className="fixed inset-0 z-40 bg-slate-900/50 backdrop-blur-sm lg:hidden"
+          className="fixed inset-0 z-40 bg-slate-900/50 backdrop-blur-sm lg:hidden transition-opacity"
           onClick={() => setMobileMenuOpen(false)}
         />
       )}
 
       {/* Sidebar - Desktop & Mobile */}
-      <div className={`fixed inset-y-0 left-0 z-50 transform lg:transform-none lg:static lg:block transition-transform duration-300 lg:p-4 lg:pr-0 lg:h-screen ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}>
-        <Sidebar onClose={() => setMobileMenuOpen(false)} />
+      <div className={`fixed inset-x-0 bottom-0 z-50 transform lg:transform-none lg:static lg:block transition-transform duration-[600ms] ease-[cubic-bezier(0.34,1.56,0.64,1)] lg:inset-y-0 lg:left-0 lg:p-4 lg:pr-0 lg:h-screen lg:w-auto ${mobileMenuOpen ? 'translate-y-0 lg:translate-x-0' : 'translate-y-[120%] lg:-translate-x-full'}`}>
+        <div className="h-[85vh] lg:h-full rounded-t-[2.5rem] lg:rounded-none overflow-hidden bg-white/95 backdrop-blur-3xl shadow-[0_-10px_40px_rgba(0,0,0,0.1)] lg:shadow-none lg:bg-transparent transition-all">
+          <Sidebar onClose={() => setMobileMenuOpen(false)} />
+        </div>
       </div>
 
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col h-screen overflow-hidden">
         
         {/* Top Header (Mobile menu trigger & Profile) */}
-        <header className="bg-white/80 backdrop-blur-xl border border-slate-200/80 lg:border-x-0 lg:border-t-0 lg:border-b-slate-200 sticky top-3 lg:top-0 z-30 mx-3 lg:mx-0 mt-3 lg:mt-0 rounded-2xl lg:rounded-none px-4 sm:px-6 lg:px-8 h-14 lg:h-16 flex items-center justify-between shrink-0 shadow-sm shadow-slate-200/50 lg:shadow-none transition-all duration-300">
+        <header className="bg-white/80 backdrop-blur-xl border border-slate-200/80 lg:border-x-0 lg:border-t-0 lg:border-b-slate-200 fixed lg:sticky bottom-4 lg:bottom-auto lg:top-0 left-4 right-4 lg:left-0 lg:right-0 z-30 lg:z-30 rounded-2xl lg:rounded-none px-4 sm:px-6 lg:px-8 h-14 lg:h-16 flex items-center justify-between shadow-lg shadow-slate-200/50 lg:shadow-none transition-all duration-300">
           
           <div className="flex items-center gap-4">
             <button 
@@ -388,7 +390,7 @@ export default function DashboardLayout({ children }) {
           </div>
         </header>
 
-        <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
+        <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 pb-24 lg:pb-8">
           <div className="max-w-7xl mx-auto">
             {children}
           </div>
