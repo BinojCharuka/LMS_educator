@@ -88,7 +88,7 @@ export default function LandingFooter() {
         <p className="text-slate-500 text-xs">© {new Date().getFullYear()} Educator LMS. All rights reserved.</p>
         <p className="text-slate-500 text-xs flex items-center gap-1.5">
           <span>Designed by</span>
-          <a href="https://charustudio.com" target="_blank" rel="noreferrer" className="text-slate-400 hover:text-primary-400 font-bold transition-all duration-300 decoration-dotted underline underline-offset-4">
+          <a href="https://charudesignstudio.vercel.app" target="_blank" rel="noreferrer" className="text-slate-400 hover:text-primary-400 font-bold transition-all duration-300 decoration-dotted underline underline-offset-4">
             Charu Design Studio
           </a>
         </p>
