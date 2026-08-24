@@ -77,7 +77,7 @@ export default function LandingHero() {
         </div>
 
         {/* Right — Visual card */}
-        <div className="relative flex justify-center lg:justify-end mt-10 lg:mt-0">
+        <div className="relative flex flex-col items-center lg:block mt-10 lg:mt-0">
           
           {teacher.imageUrl ? (
             <div className="relative w-full max-w-sm lg:max-w-md flex justify-center items-end">
@@ -93,8 +93,8 @@ export default function LandingHero() {
                 className="relative z-10 w-full h-auto max-h-[500px] object-contain drop-shadow-[0_20px_20px_rgba(0,0,0,0.15)] transition-transform duration-700 hover:-translate-y-2" 
               />
               
-              {/* Floating Name Badge */}
-              <div className="absolute top-12 -left-8 lg:-left-24 z-30 bg-white/90 backdrop-blur-md rounded-2xl shadow-xl px-6 py-3 border border-white/50 text-left whitespace-nowrap">
+              {/* Floating Name Badge - Desktop Only */}
+              <div className="hidden lg:block absolute top-12 -left-24 z-30 bg-white/90 backdrop-blur-md rounded-2xl shadow-xl px-6 py-3 border border-white/50 text-left whitespace-nowrap">
                 <p className="font-display font-bold text-slate-800 text-lg">{teacher.name}</p>
                 <p className="text-primary-600 text-sm font-medium">{teacher.qualifications}</p>
               </div>
@@ -112,8 +112,8 @@ export default function LandingHero() {
             </div>
           )}
 
-          {/* Floating stat card */}
-          <div className="absolute -bottom-6 -left-8 lg:-left-16 z-30 bg-white rounded-2xl shadow-xl px-4 py-3 flex items-center gap-3 border border-slate-100">
+          {/* Floating stat card - Desktop Only */}
+          <div className="hidden lg:flex absolute -bottom-6 -left-16 z-30 bg-white rounded-2xl shadow-xl px-4 py-3 items-center gap-3 border border-slate-100">
             <div className="w-10 h-10 bg-emerald-50 rounded-xl flex items-center justify-center text-emerald-600 font-bold text-lg">✓</div>
             <div>
               <p className="font-bold text-slate-800 text-sm">98% Pass Rate</p>
@@ -121,11 +121,33 @@ export default function LandingHero() {
             </div>
           </div>
 
-          {/* Floating badge */}
-          <div className="absolute -top-6 -right-6 lg:-right-12 z-30 bg-white rounded-2xl shadow-xl px-4 py-3 border border-slate-100">
+          {/* Floating badge - Desktop Only */}
+          <div className="hidden lg:block absolute -top-6 -right-12 z-30 bg-white rounded-2xl shadow-xl px-4 py-3 border border-slate-100">
             <p className="text-xs text-slate-500">Active Students</p>
             <p className="font-display font-bold text-primary-600 text-xl">200+</p>
           </div>
+
+          {/* Mobile Only Badges Below Image */}
+          <div className="flex lg:hidden flex-col w-full max-w-sm gap-4 mt-6 relative z-30">
+            <div className="bg-white rounded-2xl shadow-md px-6 py-4 border border-slate-100 flex justify-between items-center">
+              <div>
+                <p className="font-display font-bold text-slate-800 text-lg">{teacher.name}</p>
+                <p className="text-primary-600 text-sm font-medium">{teacher.qualifications}</p>
+              </div>
+              <div className="text-right">
+                <p className="text-xs text-slate-500">Active Students</p>
+                <p className="font-display font-bold text-primary-600 text-xl">200+</p>
+              </div>
+            </div>
+            <div className="bg-white rounded-2xl shadow-md px-4 py-3 flex items-center gap-3 border border-slate-100">
+              <div className="w-10 h-10 bg-emerald-50 rounded-xl flex items-center justify-center text-emerald-600 font-bold text-lg">✓</div>
+              <div>
+                <p className="font-bold text-slate-800 text-sm">98% Pass Rate</p>
+                <p className="text-slate-400 text-xs">Avg. 2 grade improvement</p>
+              </div>
+            </div>
+          </div>
+
         </div>
       </div>
     </section>
